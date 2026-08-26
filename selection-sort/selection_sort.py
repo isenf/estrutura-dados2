@@ -2,7 +2,6 @@
 Selection sort algorithm.
 
 Author: Dante Fabro 
-
 Aug, 2026.
 """
 
@@ -29,7 +28,7 @@ def swap(A: list, idx1: int, idx2: int) -> None:
 
 # %%
 
-def selection_sort(A: list):
+def selection_sort(A: list) -> None:
     """
     Sorts a list using Selection Sort algorithm.
 
@@ -46,13 +45,44 @@ def selection_sort(A: list):
                 min_idx = j
 
         swap(A, i, min_idx)
-        
+
+# %%
+
+def bidirectional_selection_sort(A: list) -> None:
+    """
+    Implements the bidirectional invariant of the Selection Sort algorithm.
+
+    Parameters
+    ----------
+    A: list
+        Array like to be sorted.
+    """
+    left = 0
+    right = len(A)-1
+
+    while left < right:
+        min_idx = left
+        max_idx = left
+
+        for j in range(left+1, right+1):
+            if A[min_idx] > A[j]:
+                min_idx = j
+            if A[max_idx] < A[j]:
+                max_idx = j
+
+        swap(A, left, min_idx)
+        if(max_idx == left):
+            max_idx = min_idx
+
+        swap(A, right, max_idx)
+        left += 1
+        right -= 1
 
 # %%
 
 arr = ["Ana", "João", "Bia", "Carlos"]
 # arr = [0, 3, -9,  1, 5, 7, 8]
 print(f"original array: {arr}")
-selection_sort(A=arr)
+bidirectional_selection_sort(A=arr)
 print(f"sorted array: {arr}")
 
