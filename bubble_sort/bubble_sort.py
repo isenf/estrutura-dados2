@@ -41,8 +41,9 @@ def bubble_sort(A: list) -> None:
 
 # %%
 
-arr = [9, 1, 0, 4, 6, 2]
-print("unsorted:", arr)
-bubble_sort(arr)
-print("sorted:", arr)
+if __name__ == '__main__':
+    arr = [9, 1, 0, 4, 6, 2]
+    print("unsorted:", arr)
+    bubble_sort(arr)
+    print("sorted:", arr)
 

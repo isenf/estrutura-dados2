@@ -87,44 +87,45 @@ def bidirectional_selection_sort(A: list) -> None:
 
 # %%
 
-arr = ["Ana", "João", "Bia", "Carlos"]
-# arr = [0, 3, -9,  1, 5, 7, 8]
-print(f"original array: {arr}")
-bidirectional_selection_sort(A=arr)
-print(f"sorted array: {arr}")
-
-# %%
-
-# vizualization of time
-random.seed(186) # for reproducibility
-sizes = [100*i for i in range(1, 15+1)]
-times = {
-    'default': [],
-    'minmax': []
-}
-
-for size in sizes:
-    arr = [random.randint(0, 1000) for _ in range(size)]
-    start_time = time.time()
-    selection_sort(A=arr)
-    end_time = time.time()
-
-    times['default'].append(end_time-start_time)
-
-    start_time = time.time()
+if __name__ == '__main__':
+    arr = ["Ana", "João", "Bia", "Carlos"]
+    # arr = [0, 3, -9,  1, 5, 7, 8]
+    print(f"original array: {arr}")
     bidirectional_selection_sort(A=arr)
-    end_time = time.time()
-
-    times['minmax'].append(end_time-start_time)
-
-# %%
-
-fig, ax = plt.subplots(figsize=(10, 4))
-ax.plot(sizes, times['default'], label='default')
-ax.plot(sizes, times['minmax'], label='bidirectional')
-ax.set_xticks(ticks=sizes)
-ax.set_xlabel("size of array")
-ax.set_ylabel("execution time")
-ax.set_title("complexity of selection sort")
-ax.legend()
-plt.show()
+    print(f"sorted array: {arr}")
+    
+    # %%
+    
+    # vizualization of time
+    random.seed(186) # for reproducibility
+    sizes = [100*i for i in range(1, 15+1)]
+    times = {
+        'default': [],
+        'minmax': []
+    }
+    
+    for size in sizes:
+        arr = [random.randint(0, 1000) for _ in range(size)]
+        start_time = time.time()
+        selection_sort(A=arr)
+        end_time = time.time()
+    
+        times['default'].append(end_time-start_time)
+    
+        start_time = time.time()
+        bidirectional_selection_sort(A=arr)
+        end_time = time.time()
+    
+        times['minmax'].append(end_time-start_time)
+    
+    # %%
+    
+    fig, ax = plt.subplots(figsize=(10, 4))
+    ax.plot(sizes, times['default'], label='default')
+    ax.plot(sizes, times['minmax'], label='bidirectional')
+    ax.set_xticks(ticks=sizes)
+    ax.set_xlabel("size of array")
+    ax.set_ylabel("execution time")
+    ax.set_title("complexity of selection sort")
+    ax.legend()
+    plt.show()

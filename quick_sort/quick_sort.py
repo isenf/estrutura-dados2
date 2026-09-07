@@ -40,8 +40,9 @@ def quick_sort(A: list) -> list:
 
 # %%
 
-arr = [9, 1, 0, 4, 6, 2]
-print("unsorted:", arr)
-new_arr = quick_sort(arr)
-print("sorted:", new_arr)
+if __name__ == '__main__':
+    arr = [9, 1, 0, 4, 6, 2]
+    print("unsorted:", arr)
+    new_arr = quick_sort(arr)
+    print("sorted:", new_arr)
 

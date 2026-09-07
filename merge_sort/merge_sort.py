@@ -66,7 +66,8 @@ def merge_sort(A: list) -> list:
 
 # %%
 
-arr = [9, 1, 0, 4, 6, 2]
-print("unsorted:", arr)
-sorted_arr = merge_sort(arr)
-print("sorted:", sorted_arr)
+if __name__ == '__main__':
+    arr = [9, 1, 0, 4, 6, 2]
+    print("unsorted:", arr)
+    sorted_arr = merge_sort(arr)
+    print("sorted:", sorted_arr)
