@@ -164,6 +164,32 @@ public class BST <Key extends Comparable<Key>, Value> {
         tree.insert(30,"a30");
         tree.insert(20,"a20");
         tree.insert(80,"a80");
+        
+        System.out.println("after inserts:\nsize -> " + tree.size() + " height -> " + tree.height()
+                           + " min -> " + tree.min() + " max -> " + tree.max());
+        System.out.println("\ninorder traversal");
+        tree.inOrder();
+        System.out.println("\npreorder traversal");
         tree.preOrder();
+        System.out.println("\npostorder traversal");
+        tree.postOrder();
+
+        System.out.println("\nsearch");
+        System.out.println("search(30) -> " + tree.search(30));
+        System.out.println("search(99) -> " + tree.search(99));
+        System.out.println("contains(20) -> " + tree.contains(20));
+        System.out.println("contains(23) -> " + tree.contains(23));
+
+        System.out.println("\nupdate duplicate key");
+        tree.insert(30, "new30");
+        System.out.println("search(30) -> " + tree.search(30));
+
+        System.out.println("\ndelete leaf node");
+        tree.delete(20);
+        System.out.println("size -> " + tree.size() + " contains(20) -> " +tree.contains(20));
+
+        System.out.println("\ndelete node with two childs");
+        tree.delete(50);
+        System.out.println("size -> " + tree.size() + " contains(50) -> " +tree.contains(50));
     }
 }
