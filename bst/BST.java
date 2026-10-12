@@ -9,26 +9,34 @@ public class BST <Key extends Comparable<Key>, Value> {
         this.size=0;
     }
 
-
     public int size(){
         return this.size;
     }
 
-
     public boolean isEmpty(){
         return this.size == 0;
+    }
+
+    public Key min(){
+        return root == null ? null : minNode(root).getKey();
+    }
+
+    public Key max(){
+        return root == null ? null : maxNode(root).getKey();
+    }
+
+    public int height(){
+        return root == null? -1 : root.getHeight();
     }
 
     public void insert(Key key, Value value){
         this.root = insert(this.root, key, value);
     }
 
-
     public Value search(Key key){
         Node<Key, Value> n = search(root, key);
         return n == null ? null : n.getValue();
     }
-
 
     public void delete(Key key){
         if(!contains(key)) return;
@@ -36,11 +44,21 @@ public class BST <Key extends Comparable<Key>, Value> {
         size--;
     }
 
-
     public boolean contains(Key key){
         return search(root, key) != null;
     }
 
+    public void inOrder(){
+        inOrder(root);
+    }
+
+    public void preOrder(){
+        preOrder(this.root);
+    }
+
+    public void postOrder(){
+        postOrder(root);
+    }
 
     protected Node<Key, Value> insert(Node<Key, Value> node, Key key, Value value){
         if(node == null){
@@ -61,7 +79,6 @@ public class BST <Key extends Comparable<Key>, Value> {
         return  node;
     }
 
-
     protected Node<Key, Value> search(Node<Key, Value> node, Key key){
         while(node != null){
             int comp = key.compareTo(node.getKey());
@@ -73,7 +90,6 @@ public class BST <Key extends Comparable<Key>, Value> {
 
         return null;
     }
-
 
     protected Node<Key, Value> delete(Node<Key, Value> node, Key key){
         if(node == null) return null;
@@ -98,18 +114,15 @@ public class BST <Key extends Comparable<Key>, Value> {
         return node;
     }
 
-
     protected Node<Key, Value> minNode(Node<Key, Value> node){
         while(node.getLeft() != null) node = node.getLeft();
         return node;
     }
 
-
     protected Node<Key, Value> maxNode(Node<Key, Value> node){
         while(node.getRight() != null) node = node.getRight();
         return node;
     }
-
 
     protected void updateHeight(Node<Key, Value> node){
         int lh = (node.getLeft() == null) ? -1: node.getLeft().getHeight();
@@ -118,11 +131,13 @@ public class BST <Key extends Comparable<Key>, Value> {
         node.setHeight(1+Math.max(lh, rh));
     }
 
+    protected void inOrder(Node<Key,Value> node){
+        if(node == null) return;
 
-    public void preOrder(){
-        preOrder(this.root);
+        inOrder(node.getLeft());
+        System.out.println(node.getKey() +" -> "+node.getValue());
+        inOrder(node.getRight());
     }
-
 
     protected void preOrder(Node<Key, Value> node){
         if(node == null) return;
@@ -132,7 +147,13 @@ public class BST <Key extends Comparable<Key>, Value> {
         preOrder(node.getRight());
     }
 
+    protected void postOrder(Node<Key, Value> node){
+        if(node == null) return;
 
+        postOrder(node.getLeft());
+        postOrder(node.getRight());
+        System.out.println(node.getKey() +" -> "+node.getValue());
+    }
 
     public static void main(String[] args) {
         BST<Integer, String> tree = new BST<>();
