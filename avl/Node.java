@@ -1,10 +1,7 @@
-package red_black;
-
 public class Node<Key, Value> {
     private Key key;
     private Value value;
     private int height;
-    private int color;  // o -> red; 1 -> black.
     private Node<Key, Value> left;
     private Node<Key, Value> right;
 
@@ -12,7 +9,6 @@ public class Node<Key, Value> {
         this.key = key;
         this.value = value;
         this.height = 0;
-        this.color = 0;
         this.left = null;
         this.right = null;
     }
@@ -44,14 +40,6 @@ public class Node<Key, Value> {
         this.right = right;
     }
 
-    public void setColor(int color){
-        if(color != 0 || color != 1){
-            throw new IllegalArgumentException("color must be 0 or 1");
-        }
-
-        this.color = color;
-    }
-
     public Key getKey(){
         return this.key;
     }
@@ -62,14 +50,6 @@ public class Node<Key, Value> {
 
     public int getHeight(){
         return this.height;
-    }
-
-    public int getColor(){
-        return this.color;
-    }
-
-    public String getColorString(){
-        return this.color == 0 ? "red" : "black";
     }
 
     public Node<Key, Value> getLeft(){
