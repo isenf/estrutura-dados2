@@ -1,6 +1,5 @@
 package avl;
 
-import javax.management.ValueExp;
 
 public class AVL <Key extends Comparable<Key>, Value> {
     protected Node<Key, Value> root;
@@ -35,6 +34,15 @@ public class AVL <Key extends Comparable<Key>, Value> {
         return search(root, key) != null;
     }
 
+    public Value search(Key key){
+        Node<Key, Value> n = search(root, key);
+        return n == null ? null : n.getValue();
+    }
+
+    public void insert(Key key, Value val){
+        root = insert(root, key, val);
+    }
+
     public Node<Key, Value> maxNode(){
         return maxNode(root);
     }
@@ -66,6 +74,24 @@ public class AVL <Key extends Comparable<Key>, Value> {
         }
 
         return null;
+    }
+
+    protected Node<Key, Value> insert(Node<Key, Value> node, Key key, Value val){
+        if(node == null){
+            this.size++;
+            return new Node<>(key, val);
+        }
+
+        int comp = key.compareTo(node.getKey());
+        if(comp < 0){
+            node.setLeft(insert(node.getLeft(), key, val));
+        } else if(comp > 0){
+            node.setRight(insert(node.getRight(), key, val));
+        } else{
+            node.setValue(val);
+        }
+
+        return rebalance(node);
     }
 
     protected int balanceFactor(Node<Key, Value> node){
