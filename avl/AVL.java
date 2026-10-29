@@ -1,5 +1,7 @@
 package avl;
 
+import javax.management.ValueExp;
+
 public class AVL <Key extends Comparable<Key>, Value> {
     protected Node<Key, Value> root;
     protected int size;
@@ -66,6 +68,57 @@ public class AVL <Key extends Comparable<Key>, Value> {
         return null;
     }
 
+    protected int balanceFactor(Node<Key, Value> node){
+        int lh = node.getLeft() == null ? -1 : node.getLeft().getHeight();
+        int rh = node.getRight() == null ? -1 : node.getRight().getHeight();
+
+        return lh - rh;
+    }
+
+    protected Node<Key, Value> rebalance(Node<Key, Value> node){
+        updateHeight(node);
+        int bf = balanceFactor(node);
+
+        if(bf > 1){
+            if(balanceFactor(node.getLeft()) < 0){  // left-right case
+                node.setLeft(rotateLeft(node.getLeft()));
+            }
+            return rotateRight(node);
+        }
+
+        if(bf < -1){
+            if(balanceFactor(node.getRight()) > 0){ // right-left case
+                node.setRight(rotateRight(node.getRight()));
+            }
+            return rotateLeft(node);
+        }
+
+        return node; // already balanced case
+    }
+
+    
+    protected Node<Key, Value> rotateRight(Node<Key, Value> n){
+        Node<Key, Value> x = n.getLeft();
+        Node<Key, Value> y = x.getRight();
+
+        x.setRight(n);
+        n.setLeft(y);
+        updateHeight(n);
+        updateHeight(x);
+        return x;
+    }
+
+    protected Node<Key, Value> rotateLeft(Node<Key, Value> n){
+        Node<Key, Value> x = n.getRight();
+        Node<Key, Value> y = x.getLeft();
+
+        x.setLeft(n);
+        n.setRight(y);
+        updateHeight(n);
+        updateHeight(x);
+        return x;
+    }
+
     protected Node<Key, Value> minNode(Node<Key, Value> node){
         while (node.getLeft() != null) {
             node = node.getLeft();
@@ -80,6 +133,12 @@ public class AVL <Key extends Comparable<Key>, Value> {
         }
 
         return node;
+    }
+
+    protected void updateHeight(Node<Key, Value> node){
+        int lh = node.getLeft() == null ? -1 : node.getLeft().getHeight();
+        int rh = node.getRight() == null ? -1 : node.getRight().getHeight();
+        node.setHeight(1 + Math.max(lh, rh));
     }
 
     protected void inOrder(Node<Key,Value> node){
