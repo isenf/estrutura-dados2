@@ -44,7 +44,11 @@ public class AVL <Key extends Comparable<Key>, Value> {
     }
 
     public Node<Key, Value> maxNode(){
-        return maxNode(root);
+        return root == null ? null : maxNode(root);
+    }
+
+    public  Node<Key, Value> minNode(){
+        return root == null ? null : minNode(root);
     }
 
     public void inOrder(){
