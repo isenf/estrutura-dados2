@@ -43,6 +43,12 @@ public class AVL <Key extends Comparable<Key>, Value> {
         root = insert(root, key, val);
     }
 
+    public void delete(Key key){
+        if(!contains(key)) return;
+        root = delete(root, key);
+        this.size--;
+    }
+
     public Node<Key, Value> maxNode(){
         return root == null ? null : maxNode(root);
     }
@@ -93,6 +99,31 @@ public class AVL <Key extends Comparable<Key>, Value> {
             node.setRight(insert(node.getRight(), key, val));
         } else{
             node.setValue(val);
+        }
+
+        return rebalance(node);
+    }
+
+    protected Node<Key, Value> delete(Node<Key, Value> node, Key key){
+        if(node == null) return null;
+
+        int comp = key.compareTo(node.getKey());
+        if(comp < 0){
+            node.setLeft(delete(node.getLeft(), key));
+        } else if(comp > 0){
+            node.setRight(delete(node.getRight(), key));
+        } else{
+            // 0 or 1 child case
+            if(node.getLeft() == null)
+                return node.getRight();
+            if(node.getRight() == null)
+                return node.getLeft();
+
+            // 2 children case
+            Node<Key, Value> succ = minNode(node.getRight());
+            node.setKey(succ.getKey());
+            node.setValue(succ.getValue());
+            node.setRight(delete(node.getRight(), succ.getKey()));
         }
 
         return rebalance(node);
