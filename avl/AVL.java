@@ -227,6 +227,36 @@ public class AVL <Key extends Comparable<Key>, Value> {
     }
 
     public static void main(String[] args) {
+        AVL<Integer, String> T = new AVL<>();
+
+        int[] keys = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
+        for(int k: keys)
+            T.insert(k, "k"+k);
+
+        System.out.println("in-order:");
+        T.inOrder();
+
+        System.out.println("\npre-order:");
+        T.preOrder();
+
+        System.out.println("\npost-order:");
+        T.postOrder();
+
+        System.out.println("\nmin: "+ T.min());
+        System.out.println("max: "+ T.max());
+        System.out.println("size: "+ T.size() + "\nheight: "+T.height());
+        
+        T.insert(50, "value updated");
+        System.out.println("after insert(50): " + T.search(50));
+        
+        T.delete(50);
+        System.out.println("after delete(50): ");
+        T.inOrder();
+        System.out.println("size: "+ T.size() + "\nheight: "+T.height());
+        
+        for(int k: keys)
+            T.delete(k);
+        System.out.println("after drain\nsize: "+ T.size() + "\nheight: "+T.height() + "\nempty: "+T.isEmpty());
         
     }
 }
