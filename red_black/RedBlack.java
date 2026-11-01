@@ -32,4 +32,31 @@ public class RedBlack <Key extends Comparable<Key>, Value> {
         return !isRed(node);
     }
     
+    protected Node<Key, Value> searchNode(Key key){
+        Node<Key, Value> cur = this.root;
+
+        while (cur != NIL) {
+            int comp = key.compareTo(cur.getKey());
+
+            if(comp <0){
+                cur = cur.getLeft();
+            } else if(comp > 0){
+                cur = cur.getRight();
+            } else{
+                return cur;
+            }
+        }
+
+        return NIL; // node not found
+    }
+
+    public Value search(Key key){
+        Node<Key, Value> node = searchNode(key);
+        return node == this.NIL ? null : node.getValue();
+    }
+
+    public boolean contains(Key key){
+        return searchNode(key) != this.NIL;
+    }
+    
 }
