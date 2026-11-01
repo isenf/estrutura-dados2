@@ -9,9 +9,9 @@ public class RedBlack <Key extends Comparable<Key>, Value> {
     public RedBlack(){
         NIL = new Node<>();
         NIL.setRed(false);
-        NIL.setParent(null);;
-        NIL.setLeft(null);;
-        NIL.setRight(null);;
+        NIL.setParent(null);
+        NIL.setLeft(NIL);
+        NIL.setRight(NIL);
         this.root = NIL;
         this.size = 0;
     }
@@ -95,6 +95,91 @@ public class RedBlack <Key extends Comparable<Key>, Value> {
 
         y.setRight(x);
         x.setParent(y);
+    }
+
+    // insertion
+    public void insert(Key key, Value value){
+        Node<Key, Value> parent = this.NIL;
+        Node<Key, Value> cur = this.root;
+        int comp = 0;
+
+        while (cur != this.NIL) {
+            parent = cur;
+            comp = key.compareTo(cur.getKey());
+
+            if(comp < 0){
+                cur = cur.getLeft();
+            } else if(comp > 0){
+                cur = cur.getRight();
+            } else{
+                cur.setValue(value);
+                return;
+            }
+        }
+
+        Node<Key, Value> z = new Node<>(key, value);
+        z.setRight(this.NIL);
+        z.setLeft(this.NIL);
+        z.setParent(parent);
+
+        if(parent == this.NIL){
+            this.root = z;
+        } else if(comp < 0){
+            parent.setLeft(z);
+        } else{
+            parent.setRight(z);
+        }
+
+        this.size++;
+        insertFixup(z);
+    }
+
+    private void insertFixup(Node<Key, Value> z){
+        while (isRed(z.getParent())) {
+            Node<Key, Value> p = z.getParent();
+            Node<Key, Value> g = p.getParent();
+
+            if(p == g.getLeft()){// z's parent is the left child 
+                Node<Key, Value> u = g.getRight();  // z's uncle
+
+                if(isRed(u)){   // z's uncle is red, case 1
+                    p.setRed(false);
+                    u.setRed(false);
+                    g.setRed(true);
+                    z = g;  // two levels up
+                } else{
+                    if(z == p.getRight()){  // z is p's right child, case 2: left rotation and case 3
+                        z = p;
+                        rotateLeft(z);
+                        p = z.getParent();
+                        g = p.getParent();
+                    }
+                    // case 3
+                    p.setRed(false);
+                    g.setRed(true);
+                    rotateRight(g);
+                }
+            } else{ // z's parent is the right child, symmetric with left child case
+                Node<Key, Value> u = g.getLeft();   // z's uncle
+                if(isRed(u)){
+                    p.setRed(false);
+                    u.setRed(false);
+                    g.setRed(true);
+                    z = g;  // two levels up
+                } else{
+                    if(z == p.getLeft()){   // z is p's left child
+                        z = p;
+                        rotateRight(z);
+                        p = z.getParent();
+                        g = p.getParent();
+                    }
+                    p.setRed(false);
+                    g.setRed(true);
+                    rotateLeft(g);
+                }
+            }
+        }
+        this.root.setRed(false);
     }
 
     public static void main(String[] args) {
