@@ -32,6 +32,7 @@ public class RedBlack <Key extends Comparable<Key>, Value> {
         return !isRed(node);
     }
     
+    // search
     protected Node<Key, Value> searchNode(Key key){
         Node<Key, Value> cur = this.root;
 
@@ -57,6 +58,47 @@ public class RedBlack <Key extends Comparable<Key>, Value> {
 
     public boolean contains(Key key){
         return searchNode(key) != this.NIL;
+    }
+
+    // rotations
+    private void rotateLeft(Node<Key, Value> x){
+        Node<Key, Value> y = x.getRight();
+        x.setRight(y.getLeft());
+        y.getLeft().setParent(x);
+        y.setParent(x.getParent());
+
+        if(x.getParent() == NIL){   // root case
+            root = y;
+        } else if(x == x.getParent().getLeft()){ // left child case
+            x.getParent().setLeft(y);
+        } else{ // right child case
+            x.getParent().setRight(y);
+        }
+
+        y.setLeft(x);
+        x.setParent(y);
+    }
+
+    private void rotateRight(Node<Key, Value> x){
+        Node<Key, Value> y = x.getLeft();
+        x.setLeft(y.getRight());
+        y.getRight().setParent(x);
+        y.setParent(x.getParent());
+
+        if(x.getParent() == NIL){   // root case
+            this.root = y;
+        } else if(x.getParent().getLeft() == x){    // left child case
+            x.getParent().setLeft(y);
+        } else{ // right child case
+            x.getParent().setRight(y);
+        }
+
+        y.setRight(x);
+        x.setParent(y);
+    }
+
+    public static void main(String[] args) {
+        
     }
     
 }
