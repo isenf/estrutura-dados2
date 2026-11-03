@@ -206,6 +206,112 @@ public class RedBlack <Key extends Comparable<Key>, Value> {
         this.root.setRed(false);
     }
 
+    // deletion
+    private void transplant(Node<Key, Value> u, Node<Key, Value> v){
+        if(u.getParent() == this.NIL)  
+            root = v;
+        else if(u == u.getParent().getLeft())
+            u.getParent().setLeft(v);
+        else
+            u.getParent().setRight(v);
+
+        v.setParent(u.getParent());
+    }
+
+    public void delete(Key key){
+        Node<Key, Value> z = searchNode(key);
+        if(z == NIL)
+            return; // node not found
+        this.size--;
+
+        Node<Key, Value> y = z;
+        boolean yOriginalRed = y.isRed();
+        Node<Key, Value> x;
+
+        if(z.getLeft() == NIL){ // one child cases
+            x = z.getRight();
+            transplant(z, z.getRight());
+        } else if(z.getRight() == NIL){
+            x = z.getLeft();
+            transplant(z, z.getLeft());
+        } else{ // two child case
+            y = minNode(z.getRight());
+            yOriginalRed = y.isRed();
+            x = y.getRight();
+            if(y.getParent() == z){
+                x.setParent(y);
+            } else{
+                transplant(y, y.getRight());
+                y.setRight(z.getRight());
+                y.getRight().setParent(y);
+            }
+            transplant(z, y);
+            y.setLeft(z.getLeft());
+            y.getLeft().setParent(y);
+            y.setRed(z.isRed());
+        }
+
+        if(!yOriginalRed)
+            deleteFixup(x);
+    }
+
+    private void deleteFixup(Node<Key, Value> x){
+        while(x != root && isBlack(x)){
+            if(x == x.getParent().getLeft()){   // x is the left child
+                Node<Key, Value> w = x.getParent().getRight();
+                if(isRed(w)){   // case 1
+                    w.setRed(false);
+                    x.getParent().setRed(true);
+                    rotateLeft(x.getParent());
+                    w = x.getParent().getRight();
+                }
+
+                if(isBlack(w.getLeft()) && isBlack(w.getRight())){  // case 2
+                    if(w != NIL) w.setRed(true);
+                    x = x.getParent();
+                } else{
+                    if(isBlack(w.getRight())){  // case 3
+                        w.getLeft().setRed(false);
+                        w.setRed(true);
+                        rotateRight(w);
+                        w = x.getParent().getRight();
+                    }
+                    w.setRed(x.getParent().isRed());    // case 4
+                    x.getParent().setRed(false);
+                    w.getRight().setRed(false);
+                    rotateLeft(x.getParent());
+                    x = root;
+                }
+            } else{ // its symmetrical
+                Node<Key, Value> w = x.getParent().getLeft();
+                if(isRed(w)){
+                    w.setRed(false);
+                    x.getParent().setRed(true);
+                    rotateRight(x.getParent());
+                    w = x.getParent().getLeft();
+                }
+
+                if(isBlack(w.getLeft()) && isBlack(w.getRight())){
+                    if(w != NIL) w.setRed(true);
+                    x = x.getParent();
+                } else{
+                    if(isBlack(w.getLeft())){
+                        w.getRight().setRed(false);
+                        w.setRed(true);
+                        rotateLeft(w);
+                        w = x.getParent().getLeft();
+                    }
+                    w.setRed(x.getParent().isRed());
+                    x.getParent().setRed(false);
+                    w.getLeft().setRed(false);
+                    rotateRight(x.getParent());
+                    x= root;
+                }
+            }
+        }
+        x.setRed(false);
+    }
+
     public static void main(String[] args) {
         
     }
