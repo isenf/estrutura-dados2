@@ -24,6 +24,30 @@ public class RedBlack <Key extends Comparable<Key>, Value> {
         return this.size == 0;
     }
 
+    public Node<Key, Value> minNode(){
+        Node<Key, Value> n = minNode(root);
+        return n == NIL ? NIL : n;
+    }
+
+    private Node<Key, Value> minNode(Node<Key, Value> n){
+        while (n.getLeft() != NIL) {
+            n = n.getLeft();
+        }
+        return n;
+    }
+
+    public Node<Key, Value> maxNode(){
+        Node<Key, Value> n = maxNode(root);
+        return  n == NIL ? NIL : n;
+    }
+
+    private Node<Key, Value> maxNode(Node<Key, Value> n){
+        while (n.getRight() != NIL) {
+            n = n.getRight();
+        }
+        return n;
+    }
+
     private boolean isRed(Node<Key, Value> node){
         return node != null && node.isRed();
     }
