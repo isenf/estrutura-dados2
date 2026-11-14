@@ -42,4 +42,23 @@ public class BTree <Key extends Comparable<Key>, Value> {
         
         return h;
     }
+
+    // search methods
+    public Value search(Key key){
+        Entry<Key, Value> e = root == null?null: search(root, key);
+        return e == null ? null : e.value;
+    }
+
+    public boolean contains(Key key){
+        return search(key) != null;
+    }
+
+    private Entry<Key, Value> search(Node<Key, Value> node, Key key){
+        int i = 0;
+        while (i<node.n && key.compareTo(node.entries[i].key) > 0) i++;
+        if(i < node.n && key.compareTo(node.entries[i].key) == 0) return node.entries[i];
+        if(node.leaf) return null;
+        return search(node.children[i], key);
+    }
+
 }
