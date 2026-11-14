@@ -1,0 +1,73 @@
+{
+  "region": "europe",
+  "region_code": "EU",
+  "n_nodes": 203,
+  "n_edges": 587,
+  "time_steps": 1826,
+  "date_range": [
+    "2018-01-01",
+    "2022-12-31"
+  ],
+  "feature_dim": 18,
+  "feature_columns": [
+    "co2_emissions_tonnes",
+    "energy_consumption_mwh",
+    "production_volume",
+    "transport_distance_km",
+    "fuel_consumption_L",
+    "electricity_kwh",
+    "operating_cost_usd",
+    "carbon_price_usd_per_t",
+    "demand_index",
+    "capacity_utilization",
+    "renewable_share",
+    "logistics_volume",
+    "trucking_index",
+    "diesel_price_usd_per_L",
+    "rail_share",
+    "ets_quota",
+    "modal_split_road",
+    "border_carbon_adj"
+  ],
+  "node_type_distribution": {
+    "supplier": 56,
+    "manufacturer": 64,
+    "distributor": 48,
+    "retailer": 35
+  },
+  "files": {
+    "nodes": "nodes.csv",
+    "edges": "edges.csv",
+    "time_series": "time_series.csv"
+  },
+  "schema": {
+    "nodes.csv": {
+      "node_id": "string, unique node identifier (e.g., NA_0001)",
+      "internal_idx": "int, internal index used in adjacency matrix",
+      "node_type": "string, one of {supplier, manufacturer, distributor, retailer}",
+      "isic_code": "string, ISIC 4-digit industry code",
+      "latitude": "float, normalized to region",
+      "longitude": "float, normalized to region",
+      "capacity_units": "float, production/throughput capacity",
+      "employees": "int, headcount",
+      "founded_year": "int, year established",
+      "tech_level": "float in [0,1], technology level proxy",
+      "size_class": "string, {small, medium, large}"
+    },
+    "edges.csv": {
+      "source_id, target_id": "string, node_id of endpoints",
+      "source_type, target_type": "string, node types",
+      "trade_share": "float in [0,1], share of trade volume",
+      "logistics_freq": "float in [0,1], normalized logistics frequency",
+      "tenure": "float in [0,1], normalized cooperation tenure",
+      "wij": "float, business intensity = 0.5*trade_share + 0.3*logistics_freq + 0.2*tenure"
+    },
+    "time_series.csv": {
+      "node_id": "string, foreign key to nodes.csv",
+      "date": "string YYYY-MM-DD",
+      "co2_emissions_tonnes": "float, daily CO2 emissions (tonnes)",
+      "carbon_price_usd_per_t": "float, prevailing carbon price (USD/tonne) -- TARGET",
+      "...": "and 16 other feature columns"
+    }
+  }
+}
