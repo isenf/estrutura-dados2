@@ -8,6 +8,7 @@ import pandas as pd
 import igraph as ig
 import matplotlib.pyplot as plt
 import networkx as nx
+from typing import Literal
 
 # %% [markdown]
 
@@ -30,8 +31,8 @@ COLORS = {
 
 edges = pd.read_csv(f"{DATA_PATH}/raw/edgedata.csv")
 edges.shape # 396 arestas
-edges.head()
 edges["type"].unique()
+edges.head()
 # %%
 nodes = pd.read_csv(f"{DATA_PATH}/raw/nodes.csv")
 nodes.shape # 97 vértices
@@ -105,3 +106,107 @@ draw_graph(g_res, title="AAAAA", directed=True)
 # %%
 # g_res_nx = g_res.to_networkx()
 # nx.draw(g_res_nx)
+
+# %%
+
+# P1: Quantos recursos realmente circulam?
+def neighbors_by_edge(
+    g: ig.Graph, 
+    node_name: str,
+    etype: str,
+    direction: Literal["in", "out"] 
+): 
+    try:
+        idx = g.vs.find(name=node_name).index
+    except ValueError:
+        return 0.0
+    return sum(1.0 for e in g.incident(idx, mode=direction)
+               if g.es[e]["etype"] == etype)
+
+table = []
+for v in g_res.vs:
+    if v["category"] != "Resource": 
+        continue
+    produced = neighbors_by_edge(g_res, v["name"], "Production", "in")
+    used = neighbors_by_edge(g_res, v["name"], "Use", "out")
+    table.append((v["name"], produced, used))
+
+# %%
+
+# mudar esses nomes de variáveis depois
+residuo = [t for t in table if t[1] > 0 and t[2] == 0]
+virgem = [t for t in table if t[1] ==0 and t[2] > 0]
+circulando = [t for t in table if t[1] >0 and t[2] > 0]
+orfaos = [t for t in table if t[1] ==0 and t[2] ==0]
+
+# %%
+
+print("residuos:", len(residuo))
+print("virgem:", len(virgem))
+print("circulando:", len(circulando))
+print("orfaos:", len(orfaos))
+
+# %%
+
+total = len(table)
+print("taxa:", len(circulando)/ total)
+
+# %% [markdown]
+
+# P2: Quais recursos são gerados como resíduos (alguém produz) mas ninguém usa?
+
+# %%
+from collections import deque
+
+def bfs(
+    g: ig.Graph,
+    resource_name: str,
+    max_jumps: int=5
+) -> dict:
+    """
+    BFS.
+    """
+    if resource_name not in g.vs["name"]:
+        return {}
+
+    start = g.vs.find(name=resource_name).index
+    dist = {start: 0}
+    queue = deque([start])
+
+    def neighbors(
+        idx: int
+    ):
+        cur_type = g.vs[idx]["category"]
+        out = []
+        for e in g.incident(idx, mode="out"):
+            et = g.es[e]["etype"]
+            target = g.es[e].target
+            if cur_type == "Resource" and et=="Use":
+                out.append((target, "Use"))
+            elif cur_type != "Resource" and et=="Symbiosis":
+                out.append((target, "Symbiosis"))
+            elif cur_type!= "Resource" and et=="Production":
+                out.append((target, "Production")) 
+
+        if cur_type != "Resource":
+            for e in g.indicent(idx, mode="out"):
+                if g.es[e]["etype"] == "Communication":
+                    out.append((g.es[e].target, "Communication"))
+        return out
+
+    while queue:
+        cur = queue.popleft()
+        d = dist[cur]
+        if d >= max_jumps:
+            continue
+        for n, _et in neighbors(cur):
+            if n not in dist:
+                dist[n] = d+1
+                queue.append(n)
+
+    return {g.vs[k]["name"]: v for k, v in dist.items()}
+
+# %%
+
+   
+
