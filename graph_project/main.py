@@ -189,7 +189,7 @@ def bfs(
                 out.append((target, "Production")) 
 
         if cur_type != "Resource":
-            for e in g.indicent(idx, mode="out"):
+            for e in g.incident(idx, mode="out"):
                 if g.es[e]["etype"] == "Communication":
                     out.append((g.es[e].target, "Communication"))
         return out
@@ -208,5 +208,86 @@ def bfs(
 
 # %%
 
-   
+from collections import Counter 
+prod = Counter()
+use = Counter()
+
+for e in g_res.es:
+    if e["etype"] == "Production":
+        prod[e.target] += 1
+    elif e["etype"] == "Use":
+        use[e.source] += 1
+
+rows = []
+for v in g_res.vs:
+    if v["category"] != "Resource":
+        continue
+
+    p = prod.get(v.index, 0)
+    u = use.get(v.index, 0)
+    reach = bfs(g_res, v["name"], max_jumps=5)
+    comp_reach = {
+        k: d for k, d in reach.items()
+        if k != v["name"] and g_res.vs.find(name=k)["category"] != "Resource"
+    }
+    rows.append({
+        "resource": v["name"],
+        "produced_by": p,
+        "used_by": u,
+        "reached_companies": len(comp_reach),
+        "jumps_to_closest": min(comp_reach.values()) if comp_reach else None
+    })
+
+df_p2 = pd.DataFrame(rows)
+df_p2
+
+# %%
+import numpy as np
+df_p2["status"] = np.select(
+    [
+        (df_p2["produced_by"]> 0) & (df_p2["used_by"] == 0) & (df_p2["reached_companies"]==0),
+        (df_p2["produced_by"] == 0) & (df_p2["used_by"] > 0),
+        (df_p2["used_by"] > 0) | (df_p2["reached_companies"] > 0)
+    ],
+    ["resíduo acumulado", "material virgem", "circula"],
+    default="isolado"
+)
+
+df_p2
+# %%
+
+(
+    df_p2.groupby("status").agg(
+        resource=("resource", "count"),
+        mean_reached_companies=("reached_companies", "mean"),
+        mean_jumps=("jumps_to_closest", "mean"),
+    ).round(4)
+)
+
+# %% [markdown]
+
+# P3: Qual hub pratica mais cirularidade?
+
+# %%
+rows = []
+for h in sorted(g_res.vs["hub"]):
+    if not h: 
+        continue
+
+    comps = [v for v in g_res.vs if v["hub"] == h and v["category"] != "Resource"]
+    materials = sum(1 for e in g_res.es
+                    if g_res.vs[e.source]["hub"] == h and e["etype"] in ("Use", "Production", "Symbiosis"))
+    rho = materials/len(comps) if comps else 0.0
+    rows.append({
+        "hub": h,
+        "companies": len(comps),
+        "materials": materials,
+        "materials_by_comp": rho
+    })
+
+df_p3 = pd.DataFrame(rows)
+df_p3   # tirar repetições do dataframe
+
+# %%
+
 
