@@ -6,6 +6,8 @@ Nov, 2026.
 
 import pandas as pd
 import igraph as ig
+import matplotlib.pyplot as plt
+import networkx as nx
 
 # %% [markdown]
 
@@ -16,6 +18,15 @@ import igraph as ig
 
 DATA_PATH = "data/"
 OUTPUT_PATH = "output"
+COLORS = {
+    "Industry": "#ff6a49",
+    "Research": "#40cdc4",
+    "Community": "#fcbb00",
+    "Regulatory": "#fff4d6",
+    "Resource": "#0066a8"
+}
+
+# %%
 
 edges = pd.read_csv(f"{DATA_PATH}/raw/edgedata.csv")
 edges.shape # 396 arestas
@@ -61,4 +72,36 @@ ig.plot(g_res)
 
 # %%
 
+def draw_graph(
+    g: ig.Graph,
+    title: str,
+    directed: bool=False,
+    figsize: tuple[float, float]=(14, 10)
+):
+    arrow_size = 0.6 if directed else 0
+    fig, ax = plt.subplots(figsize=figsize)
+    layout = g.layout_fruchterman_reingold(niter=500)
+    vcolor = [COLORS.get(c, "'#999999") for c in g.vs["category"]]
+    ig.plot(g, target=ax, layout=layout,
+            vertex_color=vcolor,
+            vertex_label=None,
+            vertex_frame_color="black", 
+            edge_color="#888888", 
+            edge_width=1.0,
+            edge_arrow_width=.45,
+            edge_arrow_size=arrow_size,
+            margin=40,
+            edge_curved=0.0
+            )
+    handles = [plt.Line2D([0],[0], marker="o", color="w", markerfacecolor=c,
+                          markersize=12, label=k) for k, c in COLORS.items()]
+    ax.legend(handles=handles, loc="upper left", title="Category", frameon=True)
+    ax.set_title(title)
+    fig.tight_layout()
+    return fig
+# %%
+draw_graph(g_res, title="AAAAA", directed=True)
 
+# %%
+# g_res_nx = g_res.to_networkx()
+# nx.draw(g_res_nx)
