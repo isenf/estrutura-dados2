@@ -20,6 +20,7 @@ OUTPUT_PATH = "output"
 edges = pd.read_csv(f"{DATA_PATH}/raw/edgedata.csv")
 edges.shape # 396 arestas
 edges.head()
+edges["type"].unique()
 # %%
 nodes = pd.read_csv(f"{DATA_PATH}/raw/nodes.csv")
 nodes.shape # 97 vértices
@@ -45,4 +46,19 @@ g_comm.delete_vertices([v.index for v in g_comm.vs if g_comm.degree(v.index) == 
 ig.plot(g_comm)
 
 # %%
+
+# resources net -> directed
+res_e = edges[edges["type"].isin(["Symbiosis", "Use", "Production"])]
+g_res =ig.Graph(directed=True)
+g_res.add_vertices(nodes["id_code"].tolist())
+g_res.add_edges(list(zip(res_e["source"], res_e["target"])))
+g_res.es["etype"] = res_e["type"].tolist()
+g_res.vs["category"] = nodes["cat_full"].tolist()
+g_res.vs["hub"] = nodes["hub"].tolist()
+
+g_res.delete_vertices([v.index for v in g_res.vs if g_res.degree(v.index, mode="all") == 0])
+ig.plot(g_res)
+
+# %%
+
 
