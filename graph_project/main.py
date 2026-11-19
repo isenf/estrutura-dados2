@@ -9,39 +9,40 @@ import igraph as ig
 
 # %% [markdown]
 
-# Os dados foram extraídos do Kaggle: 
-# https://www.kaggle.com/datasets/weyoungopenlab/synthetic-green-supply-chain-carbon-pricing-data
-#
-# Nesse projeto, optou-se por limitar à região da Europa. Ele contém 203 nós e 587 arestas.
+# https://zenodo.org/records/17375854 \
+# Tleuken, A., Rogetzer, P., Fraccascia, L. et al. From atoms to allies: a social network analysis of information and resource exchange in hubs for circularity. J. Ind. Ecol. 30, 505–520 (2026). https://doi.org/10.1007/s44498-026-00034-y
 
 # %%
 
 DATA_PATH = "data/"
 OUTPUT_PATH = "output"
 
-edges = pd.read_csv(f"{DATA_PATH}/raw/edges.csv")
-edges.shape # 587 arestas
+edges = pd.read_csv(f"{DATA_PATH}/raw/edgedata.csv")
+edges.shape # 396 arestas
 edges.head()
 # %%
 nodes = pd.read_csv(f"{DATA_PATH}/raw/nodes.csv")
-nodes.shape # 203 vértices
+nodes.shape # 97 vértices
 nodes.head()
 # %%
 
-g = ig.Graph(directed=True)
-g.add_vertices(nodes["node_id"].tolist())
-g.vs["name"] = nodes["node_id"].tolist()
-# %%
-
-for col in ["node_type", "isic_code","latitude", "longitude", 
-            "capacity_units", "employees", "founded_year", 
-            "tech_level", "size_class"]:
-    g.vs[col] = nodes[col].tolist()
+# way to treat NaN values in category (resources does not have 'category')
+nodes["cat_full"] = nodes.apply(
+    lambda r: r["category"] if pd.notna(r["category"]) else r["type"], axis=1
+)
 
 # %%
-g.add_edges(list(zip(edges["source_id"], edges["target_id"])))
-for col in ["trade_share", "logistics_freq", "tenure"]:
-    g.es[col] = edges[col].tolist()
-g.es["weight"] = edges["wij"].tolist()
+
+# communication net -> undirected
+comm_edges = edges[edges["type"]=="Communication"]
+g_comm = ig.Graph(directed=False)
+g_comm.add_vertices(nodes["id_code"].tolist())
+g_comm.add_edges(list(zip(comm_edges["source"], comm_edges["target"])))
+g_comm.vs["category"] = nodes["cat_full"].tolist()
+g_comm.vs["hub"] = nodes["hub"].tolist()
+
+g_comm.delete_vertices([v.index for v in g_comm.vs if g_comm.degree(v.index) == 0])
+ig.plot(g_comm)
+
 # %%
-ig.plot(g)
+
