@@ -288,6 +288,63 @@ for h in sorted(g_res.vs["hub"]):
 df_p3 = pd.DataFrame(rows)
 df_p3   # tirar repetições do dataframe
 
+# %% [markdown]
+
+# P4: Existem múltiplas rotas de reaproveitamento para cada resíduo?
+# multiplas -> mais que 2
+
 # %%
+
+def count_rotes(
+    g: ig.Graph,
+    v1: int,
+    v2: int,
+    max_len: int=6
+):
+    if v1 == v2:
+        return 0
+    try:
+        rotes = g.get_all_simple_paths(v=v1, to=v2, maxlen=max_len)
+    except Exception:
+        return 0
+    return len(rotes)
+
+# %%
+
+rows = []
+for v in g_res.vs:
+    if v["category"] != "Resource":
+        continue
+    prod = [g_res.vs[g_res.es[e].source]["name"]
+            for e in g_res.incident(v.index, mode="in")
+            if g_res.es[e]["etype"] == "Production"]
+    cons = [g_res.vs[g_res.es[e].source]["name"]
+            for e in g_res.incident(v.index, mode="out")
+            if g_res.es[e]["etype"] == "Use"]
+    if not prod or not cons:
+        continue
+
+    rotes_total = sum(
+        count_rotes(g_res, p, c)
+        for p in prod for c in cons if p!=c
+    )
+    rows.append({
+        "resource": v["name"],
+        "prod": len(prod),
+        "cons": len(cons),
+        "rotes": rotes_total
+    })
+
+# %%
+
+df_p4 = pd.DataFrame(rows)
+df_p4.set_index(keys="resource")
+
+# %%
+
+df_p4[df_p4.select_dtypes("number").columns.tolist()].mean()
+
+# %%
+
 
 
