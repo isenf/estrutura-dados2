@@ -344,7 +344,59 @@ df_p4.set_index(keys="resource")
 
 df_p4[df_p4.select_dtypes("number").columns.tolist()].mean()
 
+# %% [markdown]
+
+# P5: Quem fala é quem faz?
+
 # %%
 
+df = nodes[nodes["cat_full"] != "Resource"][["id_code", "cat_full", "hub"]].copy()
+df["deg_comm"] = df["id_code"].map(dict(zip(g_comm.vs["name"], g_comm.degree())))
+df["deg_res"]  = df["id_code"].map(dict(zip(g_res.vs["name"],  g_res.degree(mode="all"))))
+df =df.fillna({"deg_comm": 0, "deg_res": 0})
 
+# %%
 
+mc, mr = df["deg_comm"].median(), df["deg_res"].median()
+df["quadrante"] = np.select(
+    [(df.deg_comm > mc) & (df.deg_res > mr),
+     (df.deg_comm > mc) & (df.deg_res <= mr),
+     (df.deg_comm <= mc) & (df.deg_res > mr)],
+    ["lídder", "fachada", "invisível"],
+    default="periférico",
+)
+
+# %%
+df.groupby("quadrante")[["deg_comm","deg_res"]].agg(["count","mean"]).round(2)
+
+# %% [markdown]
+# P6: A circularidade é local ou global?
+
+# %%
+
+intern = sum(1 for e in g_res.es
+               if g_res.vs[e.source]["hub"] == g_res.vs[e.target]["hub"]
+               and e["etype"] in ("Use","Production","Symbiosis"))
+extern = sum(1 for e in g_res.es
+               if g_res.vs[e.source]["hub"] != g_res.vs[e.target]["hub"]
+               and e["etype"] in ("Use","Production","Symbiosis"))
+
+# %%
+
+print(f"fluxos internos: {intern} ({100*intern/(intern+extern):.2f}%)")
+print(f"fluxos externos: {extern} ({100*extern/(intern+extern):.2f}%)")
+
+# %% [markdown]
+# P7: O material é reusado ou apenas acumulado?
+
+# %%
+
+hierarchy = Counter(g_res.es["etype"])
+total = sum(hierarchy.values())
+
+for stage in ["Use", "Symbiosis", "Production"]:
+    val = hierarchy.get(stage, 0)
+    print(f"{stage}: {val} ({100*val/total:.2f})")
+
+reuse_rate = (hierarchy.get("Use",0) + hierarchy.get("Symbiosis",0))/hierarchy.get("Production",1)
+print(f"razão reuso/produção: {reuse_rate:.2f}")
