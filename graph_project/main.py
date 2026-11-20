@@ -271,22 +271,27 @@ df_p2
 # %%
 rows = []
 for h in sorted(set(g_res.vs["hub"])):
-    if not h or pd.isna(h): 
+    if not h or pd.isna(h):
         continue
-
     comps = [v for v in g_res.vs if v["hub"] == h and v["category"] != "Resource"]
-    materials = sum(1 for e in g_res.es
-                    if g_res.vs[e.source]["hub"] == h and e["etype"] in ("Use", "Production", "Symbiosis"))
-    interns = sum(1 for e in g_res.es
-                  if g_res.vs[e.source]["hub"] == h and g_res.vs[e.target]["hub"] == h)
-    rho = materials/len(comps) if comps else 0.0
+    materials = sum(
+        1 for e in g_res.es
+        if (g_res.vs[e.source]["hub"] == h or g_res.vs[e.target]["hub"] == h)
+        and e["etype"] in ("Use", "Production", "Symbiosis")
+    )
+    interns = sum(
+        1 for e in g_res.es
+        if g_res.vs[e.source]["hub"] == h
+        and g_res.vs[e.target]["hub"] == h
+        and e["etype"] in ("Use", "Production", "Symbiosis")
+    )
     rows.append({
         "hub": h,
         "companies": len(comps),
         "materials": materials,
-        "materials_by_comp": rho,
+        "materials_by_comp": round(materials / len(comps), 4) if comps else 0.0,
         "interns": interns,
-        "interns_by_comp": round(interns / len(comps), 3) if comps else 0.0,
+        "interns_by_comp": round(interns / len(comps), 3) if comps else 0.0
     })
 
 df_p3 = pd.DataFrame(rows).sort_values("materials_by_comp", ascending=False).reset_index(drop=True)
