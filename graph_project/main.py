@@ -18,13 +18,21 @@ from typing import Literal
 # %%
 
 DATA_PATH = "data/"
-OUTPUT_PATH = "output"
-COLORS = {
-    "Industry": "#ff6a49",
-    "Research": "#40cdc4",
-    "Community": "#fcbb00",
-    "Regulatory": "#fff4d6",
-    "Resource": "#0066a8"
+NODE_COLORS = {
+    "Industry":   "#ff6a49",
+    "Research":   "#40cdc4",
+    "Community":  "#fcbb00",
+    "Regulatory": "#e6d9a8",
+    "Resource":   "#0066a8",
+    "Unknown":    "#999999",
+}
+EDGE_COLORS = {
+    "Communication": "#1f77b4",
+    "Symbiosis":     "#2ca02c",
+    "Production":    "#d62728",
+    "Use":           "#9467bd",
+    "Relation":      "#888888",
+    "Other":         "#bbbbbb",
 }
 
 # %%
@@ -73,39 +81,80 @@ ig.plot(g_res)
 
 # %%
 
-def draw_graph(
-    g: ig.Graph,
-    title: str,
-    directed: bool=False,
-    figsize: tuple[float, float]=(14, 10)
+def draw_igraph_network(
+    g,
+    edge_attr="etype",
+    default_relation="Relation",
+    node_attr="category",
+    title="Network",
+    figsize=(14, 10),
+    node_size=500,
+    edge_alpha=0.55,
+    save_path=None,
 ):
-    arrow_size = 0.6 if directed else 0
+    G = g.to_networkx()
+    pos = nx.fruchterman_reingold_layout(G, iterations=500, seed=67, k=2)
     fig, ax = plt.subplots(figsize=figsize)
-    layout = g.layout_fruchterman_reingold(niter=500)
-    vcolor = [COLORS.get(c, "'#999999") for c in g.vs["category"]]
-    ig.plot(g, target=ax, layout=layout,
-            vertex_color=vcolor,
-            vertex_label=None,
-            vertex_frame_color="black", 
-            edge_color="#888888", 
-            edge_width=1.0,
-            edge_arrow_width=.45,
-            edge_arrow_size=arrow_size,
-            margin=40,
-            edge_curved=0.0
-            )
-    handles = [plt.Line2D([0],[0], marker="o", color="w", markerfacecolor=c,
-                          markersize=12, label=k) for k, c in COLORS.items()]
-    ax.legend(handles=handles, loc="upper left", title="Category", frameon=True)
-    ax.set_title(title)
-    fig.tight_layout()
-    return fig
-# %%
-draw_graph(g_res, title="AAAAA", directed=True)
 
+    nodes_by_cat = {}
+    for n in G.nodes():
+        nodes_by_cat.setdefault(G.nodes[n].get(node_attr, "Unknown"), []).append(n)
+    for cat, nodelist in nodes_by_cat.items():
+        nx.draw_networkx_nodes(
+            G, pos, nodelist=nodelist,
+            node_color=NODE_COLORS.get(cat, "#999999"),
+            node_size=node_size,
+            edgecolors="black", linewidths=0.7,
+            ax=ax,
+        )
+
+    edges_by_rel = {}
+    for u, v, d in G.edges(data=True):
+        rel = d.get(edge_attr, default_relation)
+        edges_by_rel.setdefault(rel, []).append((u, v))
+
+    directed = G.is_directed()
+    for rel, elist in edges_by_rel.items():
+        kwargs = dict(
+            edgelist=elist,
+            edge_color=EDGE_COLORS.get(rel, EDGE_COLORS["Other"]),
+            width=1.8,
+            alpha=edge_alpha,
+            ax=ax,
+        )
+        if directed:
+            kwargs.update(arrows=True, arrowstyle="-|>", arrowsize=10)
+        nx.draw_networkx_edges(G, pos, **kwargs)
+
+    node_handles = [
+        plt.Line2D([0], [0], marker="o", color="w",
+                   markerfacecolor=NODE_COLORS.get(cat, "#999999"),
+                   markeredgecolor="black", markersize=11, label=cat)
+        for cat in nodes_by_cat
+    ]
+    edge_handles = [
+        plt.Line2D([0], [0], color=EDGE_COLORS.get(rel, EDGE_COLORS["Other"]),
+                   linewidth=1.8, label=rel)
+        for rel in edges_by_rel
+    ]
+    leg = ax.legend(handles=node_handles, loc="upper left",
+                    title="Node category", frameon=True)
+    ax.add_artist(leg)
+    ax.legend(handles=edge_handles, loc="upper right",
+              title="Edge relation", frameon=True)
+    ax.set_title(title)
+    ax.set_axis_off()
+    fig.tight_layout()
+    if save_path:
+        fig.savefig(save_path, dpi=200, bbox_inches="tight")
+
+    return fig, ax, pos
 # %%
-# g_res_nx = g_res.to_networkx()
-# nx.draw(g_res_nx)
+draw_igraph_network(g_comm, edge_attr=None, default_relation="Communication",
+                    title="H4C - Rede de Comunicação")
+# %%
+draw_igraph_network(g_res, edge_attr="etype", node_size=300,
+                    title="H4C - Rede de Recursos")
 
 # %%
 
