@@ -404,3 +404,79 @@ for stage in ["Use", "Symbiosis", "Production"]:
 
 reuse_rate = (hierarchy.get("Use",0) + hierarchy.get("Symbiosis",0))/hierarchy.get("Production",1)
 print(f"razão reuso/produção: {reuse_rate:.2f}")
+
+# %% [markdown]
+# P8 — A rede de recursos tem ciclos fechados? (DFS)
+
+# %%
+
+def find_cycles_dfs(
+    g: ig.Graph,
+    max_depth: int=10
+) -> list[list[int]]:
+    WHITE, GRAY, BLACK = 0, 1, 2
+    color = [WHITE] * g.vcount()
+    parent = [-1] * g.vcount()
+    depth = [0] * g.vcount()
+    cycles = []
+
+    def dfs(
+        u: int
+    ) -> None:
+        color[u] = GRAY
+        if depth[u] == max_depth:
+            color[u] = BLACK
+            return
+        for e in g.incident(u, mode="out"):
+            v = g.es[e].target
+            if color[v] == WHITE:
+                parent[v] = u
+                depth[v] = depth[u]+1
+                dfs(v)
+            elif color[v] == GRAY:
+                path = [u]
+                x = parent[u]
+                while x!= -1 and x!= v and len(path) < max_depth:
+                    path.append(x)
+                    x = parent[x]
+                if x == v:
+                    path.append(v)
+                    cycles.append(list(reversed(path)))
+        color[u] = BLACK
+
+    for u in range(g.vcount()):
+        if color[u] == WHITE:
+            parent[u] = -1
+            depth[u] = 0
+            dfs(u)
+    return cycles
+
+def cannonical(c):
+    m = min(c)
+    i = c.index(m)
+    return tuple(c[i:] + c[:i])
+
+raw = find_cycles_dfs(g_res, max_depth=10)
+seen, cycles = set(), []
+for c in raw:
+    key = cannonical(c[:-1])
+    if key not in seen:
+        seen.add(key)
+        cycles.append(c)
+
+rows = []
+for c in cycles:
+    names = [g_res.vs[i]["name"] for i in c]
+    rows.append({
+        "length": len(c)-1,
+        "nodes": " -> ".join(names),
+        "types": " -> ".join(g_res.vs[i]["category"] for i in c[:-1])
+    })
+
+df_p8 = pd.DataFrame(rows).sort_values("length").reset_index(drop=True)
+print("ciclos detectados:", len(cycles))
+
+# %%
+res_p8 = df_p8.groupby("length").agg(cycles=("nodes", "count"))
+res_p8["%"] = (100 * res_p8["cycles"] / res_p8["cycles"].sum()).round(1)
+res_p8
